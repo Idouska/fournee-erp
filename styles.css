@@ -262,6 +262,15 @@ textarea {
   color: var(--danger);
 }
 
+.file-action {
+  display: grid;
+  place-items: center;
+}
+
+.file-action input {
+  display: none;
+}
+
 .primary-button {
   background: linear-gradient(135deg, var(--rose), var(--plum));
   color: #fff;
@@ -272,6 +281,11 @@ textarea {
   background: #fff;
   border-color: var(--line);
   color: var(--plum);
+}
+
+.ghost-button.small {
+  min-height: 36px;
+  padding: 0 10px;
 }
 
 .view {
@@ -482,10 +496,20 @@ th:last-child {
   padding: 18px;
 }
 
+.inline-form {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 0.8fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
 .product-list,
 .stack-list,
 .timeline-list,
-.order-list {
+.order-list,
+.recipe-list {
   display: grid;
   gap: 10px;
   padding: 16px 18px 18px;
@@ -497,6 +521,13 @@ th:last-child {
 .order-card,
 .seller-card,
 .document-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fff;
+}
+
+.recipe-card {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 14px;
@@ -672,6 +703,21 @@ th:last-child {
 .pill {
   background: #f8eef2;
   color: var(--rose-dark);
+}
+
+.pill button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 900;
+  margin-left: 4px;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .status.good {
@@ -867,6 +913,7 @@ pre {
   .dashboard-grid,
   .work-grid,
   .report-grid,
+  .inline-form,
   .quick-grid {
     grid-template-columns: 1fr;
   }

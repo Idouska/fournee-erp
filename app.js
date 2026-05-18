@@ -14,12 +14,12 @@ const seedData = {
     orderStatuses: ["A preparer", "En production", "Prete", "Livree"]
   },
   products: [
-    { id: "p1", name: "Baguette tradition", family: "Pain", price: 1.2, cost: 0.34, threshold: 25, minutes: 4, photo: "" },
-    { id: "p2", name: "Croissant beurre", family: "Viennoiserie", price: 1.4, cost: 0.48, threshold: 18, minutes: 8, photo: "" },
-    { id: "p3", name: "Pain complet", family: "Pain", price: 2.6, cost: 0.82, threshold: 10, minutes: 6, photo: "" },
-    { id: "p4", name: "Sandwich poulet", family: "Snacking", price: 4.9, cost: 1.85, threshold: 8, minutes: 7, photo: "" },
-    { id: "p5", name: "Eclair chocolat", family: "Patisserie", price: 2.9, cost: 1.05, threshold: 8, minutes: 12, photo: "" },
-    { id: "p6", name: "Tartelette fruits", family: "Patisserie", price: 3.6, cost: 1.22, threshold: 6, minutes: 14, photo: "" }
+    { id: "p1", name: "Baguette tradition", family: "Pain", price: 1.2, cost: 0.34, threshold: 25, minutes: 4, photo: "", recipe: [{ ingredientId: "i1", qty: 0.18 }, { ingredientId: "i4", qty: 0.004 }] },
+    { id: "p2", name: "Croissant beurre", family: "Viennoiserie", price: 1.4, cost: 0.48, threshold: 18, minutes: 8, photo: "", recipe: [{ ingredientId: "i1", qty: 0.07 }, { ingredientId: "i2", qty: 0.035 }] },
+    { id: "p3", name: "Pain complet", family: "Pain", price: 2.6, cost: 0.82, threshold: 10, minutes: 6, photo: "", recipe: [{ ingredientId: "i1", qty: 0.28 }, { ingredientId: "i4", qty: 0.006 }] },
+    { id: "p4", name: "Sandwich poulet", family: "Snacking", price: 4.9, cost: 1.85, threshold: 8, minutes: 7, photo: "", recipe: [{ ingredientId: "i1", qty: 0.12 }, { ingredientId: "i6", qty: 1 }] },
+    { id: "p5", name: "Eclair chocolat", family: "Patisserie", price: 2.9, cost: 1.05, threshold: 8, minutes: 12, photo: "", recipe: [{ ingredientId: "i2", qty: 0.025 }, { ingredientId: "i3", qty: 0.25 }, { ingredientId: "i5", qty: 0.03 }] },
+    { id: "p6", name: "Tartelette fruits", family: "Patisserie", price: 3.6, cost: 1.22, threshold: 6, minutes: 14, photo: "", recipe: [{ ingredientId: "i1", qty: 0.04 }, { ingredientId: "i2", qty: 0.02 }, { ingredientId: "i3", qty: 0.2 }] }
   ],
   ingredients: [
     { id: "i1", name: "Farine T65", unit: "kg", stock: 85, threshold: 30, sensitive: false, dlc: "", storage: "Sec", temp: "" },
@@ -38,7 +38,8 @@ const seedData = {
   purchases: [],
   orders: [],
   expenses: [],
-  documents: []
+  documents: [],
+  stockMovements: []
 };
 
 let state = loadState();
@@ -73,6 +74,7 @@ function normalizeState(input) {
     minutes: 0,
     threshold: 0,
     photo: "",
+    recipe: [],
     ...product
   }));
   data.ingredients = (data.ingredients || []).map((ingredient) => ({
@@ -100,6 +102,7 @@ function normalizeState(input) {
   data.orders = data.orders || [];
   data.expenses = data.expenses || [];
   data.documents = data.documents || [];
+  data.stockMovements = data.stockMovements || [];
   return data;
 }
 
@@ -137,6 +140,32 @@ function sellerById(id) {
 
 function orderById(id) {
   return state.orders.find((order) => order.id === id);
+}
+
+function recordStockMovement(ingredientId, qty, type, reason, ref = "") {
+  state.stockMovements.push({
+    id: uid("move"),
+    date: currentDate,
+    time: nowTime(),
+    ingredientId,
+    qty: Number(qty || 0),
+    type,
+    reason,
+    ref
+  });
+}
+
+function consumeRecipe(productId, producedQty, ref) {
+  const product = productById(productId);
+  if (!product || !product.recipe?.length) return;
+
+  for (const line of product.recipe) {
+    const ingredient = ingredientById(line.ingredientId);
+    const usedQty = Number(line.qty || 0) * Number(producedQty || 0);
+    if (!ingredient || usedQty <= 0) continue;
+    ingredient.stock = Number(ingredient.stock || 0) - usedQty;
+    recordStockMovement(ingredient.id, -usedQty, "Sortie", `Production ${product.name}`, ref);
+  }
 }
 
 function daysUntil(dateString) {
@@ -569,6 +598,27 @@ function renderCatalog() {
     : `<div class="list-card calm"><strong>Aucun resultat</strong><span>Modifie la recherche.</span></div>`;
 }
 
+function renderRecipes() {
+  const productsWithRecipes = state.products.filter((product) => product.recipe?.length);
+  el("recipe-list").innerHTML = productsWithRecipes.length
+    ? productsWithRecipes
+        .map((product) => `
+          <article class="recipe-card">
+            <strong>${escapeHtml(product.name)}</strong>
+            <div class="pill-row">
+              ${product.recipe
+                .map((line, index) => {
+                  const ingredient = ingredientById(line.ingredientId);
+                  return `<span class="pill">${escapeHtml(ingredient?.name || "Ingredient")} ${number.format(line.qty)} ${escapeHtml(ingredient?.unit || "")} <button type="button" data-delete-recipe="${product.id}:${index}">x</button></span>`;
+                })
+                .join("")}
+            </div>
+          </article>
+        `)
+        .join("")
+    : `<div class="list-card calm"><strong>Aucune fiche recette</strong><span>Ajoute les ingredients consommes par produit.</span></div>`;
+}
+
 function renderStock() {
   el("ingredient-count").textContent = `${state.ingredients.length} ingredient${state.ingredients.length > 1 ? "s" : ""}`;
   el("ingredient-table").innerHTML = state.ingredients.length
@@ -611,6 +661,26 @@ function renderStock() {
         })
         .join("")
     : emptyRow(7, "Aucun achat saisi.");
+
+  el("movement-table").innerHTML = state.stockMovements.length
+    ? state.stockMovements
+        .slice()
+        .reverse()
+        .slice(0, 24)
+        .map((move) => {
+          const ingredient = ingredientById(move.ingredientId);
+          return `
+            <tr>
+              <td>${escapeHtml(move.date)} ${escapeHtml(move.time || "")}</td>
+              <td>${escapeHtml(ingredient?.name || "Ingredient supprime")}</td>
+              <td><span class="status ${move.qty < 0 ? "bad" : "good"}">${escapeHtml(move.type)}</span></td>
+              <td>${number.format(move.qty)} ${escapeHtml(ingredient?.unit || "")}</td>
+              <td>${escapeHtml(move.reason || "-")}</td>
+            </tr>
+          `;
+        })
+        .join("")
+    : emptyRow(5, "Aucun mouvement de stock.");
 }
 
 function renderOrders() {
@@ -704,7 +774,10 @@ function renderDocuments() {
                 <strong>${cash(doc.amount)}</strong>
                 <small>${escapeHtml(doc.date)}</small>
               </div>
-              <button class="delete-button" type="button" data-delete-document="${doc.id}" title="Supprimer">X</button>
+              <div class="row-actions">
+                <button class="ghost-button small" type="button" data-print-document="${doc.id}">PDF</button>
+                <button class="delete-button" type="button" data-delete-document="${doc.id}" title="Supprimer">X</button>
+              </div>
             </article>
           `;
         })
@@ -780,6 +853,8 @@ function renderSelects() {
   setSelectOptions("sale-product", state.products);
   setSelectOptions("production-product", state.products);
   setSelectOptions("purchase-ingredient", state.ingredients);
+  setSelectOptions("recipe-product", state.products);
+  setSelectOptions("recipe-ingredient", state.ingredients);
   setSelectOptions("sale-seller", state.sellers);
 
   el("product-family").innerHTML = state.settings.families.map((item) => `<option>${escapeHtml(item)}</option>`).join("");
@@ -795,6 +870,7 @@ function renderAll() {
   renderSales();
   renderProduction();
   renderCatalog();
+  renderRecipes();
   renderStock();
   renderOrders();
   renderExpenses();
@@ -832,15 +908,18 @@ function addProduction(event) {
   event.preventDefault();
   const product = productById(el("production-product").value);
   if (!product) return;
+  const productionId = uid("prod");
+  const producedQty = Number(el("production-qty").value);
 
   state.productions.push({
-    id: uid("prod"),
+    id: productionId,
     date: currentDate,
     productId: product.id,
-    qty: Number(el("production-qty").value),
+    qty: producedQty,
     waste: Number(el("production-waste").value || 0),
     team: el("production-team").value.trim()
   });
+  consumeRecipe(product.id, producedQty, productionId);
 
   saveState();
   event.target.reset();
@@ -848,6 +927,24 @@ function addProduction(event) {
   el("production-waste").value = 0;
   renderAll();
   toast("Production enregistree");
+}
+
+function addRecipeLine(event) {
+  event.preventDefault();
+  const product = productById(el("recipe-product").value);
+  const ingredient = ingredientById(el("recipe-ingredient").value);
+  const qty = Number(el("recipe-qty").value || 0);
+  if (!product || !ingredient || qty <= 0) return;
+
+  product.recipe = product.recipe || [];
+  const existing = product.recipe.find((line) => line.ingredientId === ingredient.id);
+  if (existing) existing.qty = qty;
+  else product.recipe.push({ ingredientId: ingredient.id, qty });
+
+  saveState();
+  el("recipe-qty").value = 0.1;
+  renderAll();
+  toast("Recette mise a jour");
 }
 
 function addProduct(event) {
@@ -917,6 +1014,7 @@ function addPurchase(event) {
     dlc,
     temp: temp === "" ? "" : Number(temp)
   });
+  recordStockMovement(ingredient.id, qty, "Entree", `Achat ${el("purchase-supplier").value.trim() || "fournisseur"}`, "purchase");
 
   saveState();
   event.target.reset();
@@ -1039,6 +1137,59 @@ function removeById(collection, id) {
   renderAll();
 }
 
+function removeRecipeLine(value) {
+  const [productId, index] = value.split(":");
+  const product = productById(productId);
+  if (!product?.recipe) return;
+  product.recipe.splice(Number(index), 1);
+  saveState();
+  renderAll();
+}
+
+function printDocument(docId) {
+  const doc = state.documents.find((item) => item.id === docId);
+  if (!doc) return;
+  const order = orderById(doc.orderId);
+  const html = `
+    <!doctype html>
+    <html>
+      <head>
+        <title>${escapeHtml(doc.type)} ${escapeHtml(doc.number)}</title>
+        <style>
+          body{font-family:Arial,sans-serif;margin:40px;color:#222}
+          h1{margin-bottom:6px}
+          .muted{color:#666}
+          table{width:100%;border-collapse:collapse;margin-top:28px}
+          td,th{border:1px solid #ddd;padding:12px;text-align:left}
+          .total{font-size:24px;font-weight:800;text-align:right;margin-top:28px}
+        </style>
+      </head>
+      <body>
+        <h1>${escapeHtml(state.settings.businessName || "Fournee ERP")}</h1>
+        <p class="muted">${escapeHtml(state.settings.subtitle || "")}</p>
+        <h2>${escapeHtml(doc.type)} ${escapeHtml(doc.number)}</h2>
+        <p>Date: ${escapeHtml(doc.date)}<br>Client: ${escapeHtml(doc.customer)}<br>Statut: ${escapeHtml(doc.status)}</p>
+        <table>
+          <thead><tr><th>Description</th><th>Montant</th></tr></thead>
+          <tbody>
+            <tr><td>${escapeHtml(order?.product || doc.note || doc.type)}</td><td>${cash(doc.amount)}</td></tr>
+          </tbody>
+        </table>
+        <p class="total">Total: ${cash(doc.amount)}</p>
+        <p>${escapeHtml(doc.note || "")}</p>
+        <script>window.print();</script>
+      </body>
+    </html>
+  `;
+  const win = window.open("", "_blank");
+  if (!win) {
+    toast("Autorise les popups pour imprimer");
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+}
+
 function exportRows(filename, rows) {
   const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -1104,6 +1255,8 @@ function bindEvents() {
     if (target.dataset.deleteExpense) removeById("expenses", target.dataset.deleteExpense);
     if (target.dataset.deleteSeller) removeById("sellers", target.dataset.deleteSeller);
     if (target.dataset.deleteDocument) removeById("documents", target.dataset.deleteDocument);
+    if (target.dataset.deleteRecipe) removeRecipeLine(target.dataset.deleteRecipe);
+    if (target.dataset.printDocument) printDocument(target.dataset.printDocument);
   });
 
   el("sale-form").addEventListener("submit", (event) => {
@@ -1115,6 +1268,7 @@ function bindEvents() {
   });
   el("production-form").addEventListener("submit", addProduction);
   el("product-form").addEventListener("submit", addProduct);
+  el("recipe-form").addEventListener("submit", addRecipeLine);
   el("ingredient-form").addEventListener("submit", addIngredient);
   el("purchase-form").addEventListener("submit", addPurchase);
   el("order-form").addEventListener("submit", addOrder);
@@ -1178,6 +1332,22 @@ function bindEvents() {
   });
 
   el("export-json").addEventListener("click", exportJson);
+  el("import-json").addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        state = normalizeState(JSON.parse(String(reader.result || "{}")));
+        saveState();
+        renderAll();
+        toast("Sauvegarde importee");
+      } catch {
+        toast("Fichier invalide");
+      }
+    };
+    reader.readAsText(file);
+  });
   el("copy-close").addEventListener("click", async () => {
     await navigator.clipboard.writeText(el("daily-close").textContent);
     toast("Cloture copiee");

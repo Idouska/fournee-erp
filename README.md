@@ -1,6 +1,6 @@
-# Fournee ERP V3
+# Fournee ERP V4
 
-ERP web gratuit pour piloter une petite boulangerie : caisse, vendeuses, produits avec photos, production, recettes, stocks sensibles, DLC, achats, documents commerciaux, commandes clientes, charges, marges, objectifs, graphiques et cloture de journee.
+ERP web gratuit pour piloter une petite boulangerie : caisse, vendeuses, produits avec photos, production, fiches recettes detaillees, consommation automatique du stock, stocks sensibles, DLC, achats, documents commerciaux imprimables, commandes clientes, charges, marges, objectifs, graphiques et cloture de journee.
 
 ## Lancer en local
 
@@ -42,7 +42,7 @@ git push -u origin main
 
 ## Donnees
 
-La V3 stocke les donnees dans le navigateur avec `localStorage`. C'est parfait pour tester sans compte et sans serveur.
+La V4 stocke les donnees dans le navigateur avec `localStorage`. C'est parfait pour tester sans compte et sans serveur.
 
 Pour passer en mode equipe/multi-poste, creer un projet Supabase gratuit et executer `supabase_schema.sql`. Ensuite, remplacer les lectures/ecritures `localStorage` dans `app.js` par les appels Supabase.
 

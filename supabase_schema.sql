@@ -7,6 +7,7 @@ create table products (
   threshold numeric(12,2) not null default 0,
   minutes numeric(12,2) not null default 0,
   photo text,
+  recipe jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -68,6 +69,18 @@ create table purchases (
   created_at timestamptz not null default now()
 );
 
+create table stock_movements (
+  id uuid primary key default gen_random_uuid(),
+  business_date date not null,
+  movement_time text,
+  ingredient_id uuid references ingredients(id) on delete set null,
+  qty numeric(12,3) not null,
+  type text not null,
+  reason text,
+  ref text,
+  created_at timestamptz not null default now()
+);
+
 create table orders (
   id uuid primary key default gen_random_uuid(),
   due_date date not null,
@@ -115,6 +128,7 @@ alter table sellers enable row level security;
 alter table sales enable row level security;
 alter table productions enable row level security;
 alter table purchases enable row level security;
+alter table stock_movements enable row level security;
 alter table orders enable row level security;
 alter table expenses enable row level security;
 alter table documents enable row level security;

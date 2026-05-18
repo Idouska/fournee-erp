@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fournee ERP V3</title>
+    <title>Fournee ERP V4</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -54,6 +54,7 @@
               <input id="daily-goal" type="number" min="0" step="10" aria-label="Objectif de chiffre d'affaires" />
             </label>
             <button class="icon-button" type="button" id="export-json" title="Exporter les donnees">EX</button>
+            <label class="icon-button file-action" title="Importer une sauvegarde">IM<input id="import-json" type="file" accept="application/json" /></label>
             <button class="icon-button danger" type="button" id="reset-demo" title="Reinitialiser la demo">RS</button>
           </div>
         </header>
@@ -340,6 +341,22 @@
                 <button class="primary-button" type="submit">Creer le produit</button>
               </form>
             </section>
+
+            <section class="panel span-3">
+              <div class="panel-header">
+                <div>
+                  <h2>Fiche recette detaillee</h2>
+                  <span>Ingredients consommes automatiquement en production</span>
+                </div>
+              </div>
+              <form id="recipe-form" class="inline-form">
+                <label>Produit<select id="recipe-product" required></select></label>
+                <label>Ingredient<select id="recipe-ingredient" required></select></label>
+                <label>Quantite par unite<input id="recipe-qty" type="number" min="0.001" step="0.001" value="0.1" required /></label>
+                <button class="primary-button" type="submit">Ajouter a la recette</button>
+              </form>
+              <div id="recipe-list" class="recipe-list"></div>
+            </section>
           </div>
         </section>
 
@@ -413,6 +430,29 @@
                     </tr>
                   </thead>
                   <tbody id="ingredient-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel span-3">
+              <div class="panel-header">
+                <div>
+                  <h2>Mouvements de stock</h2>
+                  <span>Achats, consommations production, corrections</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Ingredient</th>
+                      <th>Mouvement</th>
+                      <th>Quantite</th>
+                      <th>Motif</th>
+                    </tr>
+                  </thead>
+                  <tbody id="movement-table"></tbody>
                 </table>
               </div>
             </section>
