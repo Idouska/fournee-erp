@@ -36,7 +36,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -211,7 +212,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   min-height: 44px;
   width: 100%;
   border: 1px solid var(--line);
@@ -223,9 +225,14 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: rgba(200, 91, 125, 0.65);
   box-shadow: 0 0 0 4px rgba(200, 91, 125, 0.14);
+}
+
+textarea {
+  resize: vertical;
 }
 
 .search-input {
@@ -487,7 +494,9 @@ th:last-child {
 .product-card,
 .list-card,
 .timeline-item,
-.order-card {
+.order-card,
+.seller-card,
+.document-card {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 14px;
@@ -495,15 +504,26 @@ th:last-child {
 }
 
 .product-card,
-.order-card {
+.order-card,
+.seller-card,
+.document-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
 }
 
+.product-card {
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+}
+
 .order-card {
   grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.seller-card,
+.document-card {
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.65fr) auto;
 }
 
 .product-card strong,
@@ -512,7 +532,12 @@ th:last-child {
 .list-card span,
 .order-card strong,
 .order-card span,
-.order-card small {
+.order-card small,
+.seller-card strong,
+.seller-card span,
+.document-card strong,
+.document-card span,
+.document-card small {
   display: block;
 }
 
@@ -520,9 +545,53 @@ th:last-child {
 .list-card span,
 .order-card span,
 .order-card small,
+.seller-card span,
+.document-card span,
+.document-card small,
 .timeline-item small {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.product-photo,
+.photo-preview {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff0f4, #f0f7f3);
+  border: 1px solid var(--line);
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  color: var(--rose-dark);
+  font-weight: 900;
+  overflow: hidden;
+}
+
+.photo-preview {
+  width: 100%;
+  min-height: 92px;
+  height: auto;
+  padding: 10px;
+  color: var(--muted);
+}
+
+.photo-preview img {
+  width: 100%;
+  max-height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.check-row input {
+  width: 18px;
+  min-height: 18px;
 }
 
 .calm {
@@ -537,7 +606,7 @@ th:last-child {
 }
 
 .quick-sale {
-  min-height: 112px;
+  min-height: 148px;
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 14px;
@@ -545,6 +614,20 @@ th:last-child {
   text-align: left;
   color: var(--ink);
   box-shadow: var(--shadow-soft);
+}
+
+.quick-sale img,
+.photo-fallback {
+  width: 100%;
+  height: 70px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #ffe4ec, #f5faf4);
+  color: var(--rose-dark);
+  font-weight: 900;
+  margin-bottom: 10px;
 }
 
 .quick-sale:hover {
@@ -624,6 +707,58 @@ th:last-child {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   gap: 4px 12px;
+}
+
+.bar-chart,
+.donut-list {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.bar-row,
+.donut-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) 96px;
+  gap: 10px;
+  align-items: center;
+}
+
+.compact-chart .bar-row {
+  grid-template-columns: 92px minmax(0, 1fr) 88px;
+}
+
+.bar-row span,
+.donut-row span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.bar-row strong,
+.donut-row strong {
+  text-align: right;
+  font-size: 0.88rem;
+}
+
+.bar-track,
+.mini-meter {
+  min-height: 12px;
+  border-radius: 999px;
+  background: #f4e7eb;
+  overflow: hidden;
+}
+
+.bar-fill,
+.mini-meter div {
+  min-height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+}
+
+.seller-meter {
+  display: grid;
+  gap: 8px;
 }
 
 .timeline-item span {
@@ -743,7 +878,9 @@ pre {
 
   .panel-header,
   .product-card,
-  .order-card {
+  .order-card,
+  .seller-card,
+  .document-card {
     grid-template-columns: 1fr;
     align-items: start;
   }
@@ -762,6 +899,17 @@ pre {
 
   .timeline-item {
     grid-template-columns: 1fr;
+  }
+
+  .bar-row,
+  .donut-row,
+  .compact-chart .bar-row {
+    grid-template-columns: 1fr;
+  }
+
+  .bar-row strong,
+  .donut-row strong {
+    text-align: left;
   }
 
   td,

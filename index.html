@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fournee ERP V2</title>
+    <title>Fournee ERP V3</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -25,7 +25,10 @@
           <button class="nav-tab" type="button" data-view="stock"><span>05</span>Stock</button>
           <button class="nav-tab" type="button" data-view="orders"><span>06</span>Commandes</button>
           <button class="nav-tab" type="button" data-view="expenses"><span>07</span>Charges</button>
-          <button class="nav-tab" type="button" data-view="reports"><span>08</span>Rapports</button>
+          <button class="nav-tab" type="button" data-view="documents"><span>08</span>Documents</button>
+          <button class="nav-tab" type="button" data-view="team"><span>09</span>Equipe</button>
+          <button class="nav-tab" type="button" data-view="settings"><span>10</span>Reglages</button>
+          <button class="nav-tab" type="button" data-view="reports"><span>11</span>Rapports</button>
         </nav>
 
         <div class="sidebar-card">
@@ -60,7 +63,7 @@
             <div>
               <span class="tag">Journee en cours</span>
               <h2 id="hero-title">Vue patronne</h2>
-              <p id="hero-copy">CA, marge, pertes, commandes et alertes au meme endroit.</p>
+              <p id="hero-copy">CA, marge, pertes, alertes.</p>
             </div>
             <div class="hero-score">
               <span>Progression</span>
@@ -139,6 +142,36 @@
             <section class="panel span-2">
               <div class="panel-header">
                 <div>
+                  <h2>CA des 7 derniers jours</h2>
+                  <span id="daily-chart-caption">Evolution</span>
+                </div>
+              </div>
+              <div id="daily-chart" class="bar-chart"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Vendeuses</h2>
+                  <span id="seller-chart-caption">Performance caisse</span>
+                </div>
+              </div>
+              <div id="seller-chart" class="bar-chart compact-chart"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Familles</h2>
+                  <span id="family-chart-caption">Mix produits</span>
+                </div>
+              </div>
+              <div id="family-chart" class="donut-list"></div>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
                   <h2>Planning boutique</h2>
                   <span id="timeline-count">0 element</span>
                 </div>
@@ -179,6 +212,7 @@
                     <option>Traiteur</option>
                   </select>
                 </label>
+                <label>Vendeuse<select id="sale-seller"></select></label>
                 <label>Paiement
                   <select id="sale-payment">
                     <option>Carte</option>
@@ -208,6 +242,7 @@
                     <th>Produit</th>
                     <th>Qte</th>
                     <th>Canal</th>
+                    <th>Vendeuse</th>
                     <th>Paiement</th>
                     <th>Total</th>
                     <th></th>
@@ -300,6 +335,8 @@
                 <label>Cout matiere<input id="product-cost" type="number" min="0" step="0.01" required /></label>
                 <label>Temps minutes<input id="product-minutes" type="number" min="0" step="1" value="0" /></label>
                 <label>Seuil alerte<input id="product-threshold" type="number" min="0" step="1" value="10" /></label>
+                <label>Photo produit<input id="product-photo" type="file" accept="image/*" /></label>
+                <div class="photo-preview" id="product-photo-preview">Aucune photo</div>
                 <button class="primary-button" type="submit">Creer le produit</button>
               </form>
             </section>
@@ -320,6 +357,8 @@
                 <label>Quantite<input id="purchase-qty" type="number" min="0.01" step="0.01" value="1" required /></label>
                 <label>Cout total<input id="purchase-cost" type="number" min="0" step="0.01" value="0" /></label>
                 <label>Fournisseur<input id="purchase-supplier" placeholder="Moulin, grossiste..." /></label>
+                <label>DLC du lot<input id="purchase-dlc" type="date" /></label>
+                <label>Temp reception C<input id="purchase-temp" type="number" step="0.1" /></label>
                 <button class="primary-button" type="submit">Ajouter l'achat</button>
               </form>
             </section>
@@ -336,6 +375,18 @@
                 <label>Unite<input id="ingredient-unit" required placeholder="kg, litre, piece" /></label>
                 <label>Stock initial<input id="ingredient-stock" type="number" min="0" step="0.01" value="0" /></label>
                 <label>Seuil alerte<input id="ingredient-threshold" type="number" min="0" step="0.01" value="5" /></label>
+                <label>DLC<input id="ingredient-dlc" type="date" /></label>
+                <label>Stockage
+                  <select id="ingredient-storage">
+                    <option>Ambiant</option>
+                    <option>Frais 0-4 C</option>
+                    <option>Frais 4-8 C</option>
+                    <option>Congele</option>
+                    <option>Sec</option>
+                  </select>
+                </label>
+                <label>Temperature actuelle C<input id="ingredient-temp" type="number" step="0.1" /></label>
+                <label class="check-row"><input id="ingredient-sensitive" type="checkbox" /> Stock sensible</label>
                 <button class="primary-button" type="submit">Creer l'ingredient</button>
               </form>
             </section>
@@ -356,6 +407,8 @@
                       <th>Unite</th>
                       <th>Stock</th>
                       <th>Seuil</th>
+                      <th>DLC</th>
+                      <th>Stockage</th>
                       <th>Statut</th>
                     </tr>
                   </thead>
@@ -457,6 +510,120 @@
           </div>
         </section>
 
+        <section class="view" id="documents-view" data-title="Documents">
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Document commercial</h2>
+                  <span>Devis, BC, BL, facture, avoir</span>
+                </div>
+              </div>
+              <form id="document-form" class="stack-form">
+                <label>Type
+                  <select id="document-type">
+                    <option>Devis</option>
+                    <option>Bon de commande</option>
+                    <option>Bon de livraison</option>
+                    <option>Facture</option>
+                    <option>Avoir</option>
+                  </select>
+                </label>
+                <label>Client<input id="document-customer" required placeholder="Nom client / societe" /></label>
+                <label>Commande liee<select id="document-order"></select></label>
+                <label>Montant MAD<input id="document-amount" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Statut
+                  <select id="document-status">
+                    <option>Brouillon</option>
+                    <option>Envoye</option>
+                    <option>Accepte</option>
+                    <option>Paye</option>
+                    <option>Annule</option>
+                  </select>
+                </label>
+                <label>Notes<input id="document-note" placeholder="Reference, conditions, livraison..." /></label>
+                <button class="primary-button" type="submit">Creer le document</button>
+              </form>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Flux documents</h2>
+                  <span id="documents-count">0 document</span>
+                </div>
+              </div>
+              <div id="documents-list" class="document-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="team-view" data-title="Equipe">
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Vendeuse</h2>
+                  <span>Personnes en caisse</span>
+                </div>
+              </div>
+              <form id="seller-form" class="stack-form">
+                <label>Nom<input id="seller-name" required placeholder="Amina" /></label>
+                <label>Role<input id="seller-role" placeholder="Matin, responsable caisse..." /></label>
+                <label>Objectif CA<input id="seller-goal" type="number" min="0" step="10" value="0" /></label>
+                <button class="primary-button" type="submit">Ajouter la vendeuse</button>
+              </form>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Performance vendeuses</h2>
+                  <span id="seller-count">0 vendeuse</span>
+                </div>
+              </div>
+              <div id="seller-list" class="seller-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="settings-view" data-title="Reglages">
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Personnalisation</h2>
+                  <span>Nom, devise, objectif, couleurs</span>
+                </div>
+              </div>
+              <form id="settings-form" class="stack-form">
+                <label>Nom de la boulangerie<input id="setting-business-name" /></label>
+                <label>Sous-titre<input id="setting-subtitle" /></label>
+                <label>Devise / monnaie<input id="setting-currency" placeholder="MAD" /></label>
+                <label>Objectif CA par defaut<input id="setting-daily-goal" type="number" min="0" step="10" /></label>
+                <label>Couleur principale<input id="setting-accent" type="color" /></label>
+                <button class="primary-button" type="submit">Enregistrer les reglages</button>
+              </form>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Listes personnalisables</h2>
+                  <span>Familles, canaux, paiements, statuts</span>
+                </div>
+              </div>
+              <form id="lists-form" class="stack-form">
+                <label>Familles produits<textarea id="setting-families" rows="3"></textarea></label>
+                <label>Canaux de vente<textarea id="setting-channels" rows="3"></textarea></label>
+                <label>Modes de paiement<textarea id="setting-payments" rows="3"></textarea></label>
+                <label>Statuts commandes<textarea id="setting-order-statuses" rows="3"></textarea></label>
+                <button class="primary-button" type="submit">Mettre a jour les listes</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
         <section class="view" id="reports-view" data-title="Rapports">
           <div class="report-grid">
             <section class="panel span-2">
@@ -493,6 +660,8 @@
                       <th>Ingredient</th>
                       <th>Qte</th>
                       <th>Fournisseur</th>
+                      <th>DLC</th>
+                      <th>Temp</th>
                       <th>Cout</th>
                     </tr>
                   </thead>
