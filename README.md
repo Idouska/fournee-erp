@@ -1,6 +1,6 @@
-# Fournee ERP
+# Fournee ERP V2
 
-V1 gratuite pour piloter une petite boulangerie : ventes, production, recettes, stock, achats, pertes, marge et cloture de journee.
+ERP web gratuit pour piloter une petite boulangerie : caisse, production, recettes, stock, achats, commandes clientes, charges, marges, objectifs et cloture de journee.
 
 ## Lancer en local
 
@@ -42,14 +42,14 @@ git push -u origin main
 
 ## Donnees
 
-La V1 stocke les donnees dans le navigateur avec `localStorage`. C'est parfait pour tester sans compte et sans serveur.
+La V2 stocke les donnees dans le navigateur avec `localStorage`. C'est parfait pour tester sans compte et sans serveur.
 
 Pour passer en mode equipe/multi-poste, creer un projet Supabase gratuit et executer `supabase_schema.sql`. Ensuite, remplacer les lectures/ecritures `localStorage` dans `app.js` par les appels Supabase.
 
 ## Roadmap conseillee
 
 1. Ajouter connexion utilisateur Supabase.
-2. Synchroniser ventes, produits, achats, production.
-3. Ajouter fiches recettes detaillees avec ingredients.
+2. Synchroniser ventes, produits, achats, production, commandes et charges.
+3. Ajouter fiches recettes detaillees avec decomposition ingredients.
 4. Ajouter sauvegarde automatique quotidienne.
 5. Ajouter import caisse CSV.

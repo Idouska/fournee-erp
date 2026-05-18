@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fournee ERP</title>
+    <title>Fournee ERP V2</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -13,58 +13,92 @@
           <div class="brand-mark">FE</div>
           <div>
             <strong>Fournee ERP</strong>
-            <span>Boulangerie</span>
+            <span>Atelier & boutique</span>
           </div>
         </div>
 
         <nav class="nav-tabs" aria-label="Modules">
-          <button class="nav-tab active" type="button" data-view="dashboard">Tableau</button>
-          <button class="nav-tab" type="button" data-view="sales">Ventes</button>
-          <button class="nav-tab" type="button" data-view="production">Production</button>
-          <button class="nav-tab" type="button" data-view="catalog">Recettes</button>
-          <button class="nav-tab" type="button" data-view="stock">Stock</button>
-          <button class="nav-tab" type="button" data-view="reports">Rapports</button>
+          <button class="nav-tab active" type="button" data-view="dashboard"><span>01</span>Tableau</button>
+          <button class="nav-tab" type="button" data-view="sales"><span>02</span>Caisse</button>
+          <button class="nav-tab" type="button" data-view="production"><span>03</span>Production</button>
+          <button class="nav-tab" type="button" data-view="catalog"><span>04</span>Recettes</button>
+          <button class="nav-tab" type="button" data-view="stock"><span>05</span>Stock</button>
+          <button class="nav-tab" type="button" data-view="orders"><span>06</span>Commandes</button>
+          <button class="nav-tab" type="button" data-view="expenses"><span>07</span>Charges</button>
+          <button class="nav-tab" type="button" data-view="reports"><span>08</span>Rapports</button>
         </nav>
+
+        <div class="sidebar-card">
+          <span>Objectif du jour</span>
+          <strong id="side-goal">0,00 MAD</strong>
+          <small id="side-goal-status">A definir</small>
+        </div>
       </aside>
 
       <main class="main">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Pilotage quotidien</p>
+            <p class="eyebrow">Pilotage intelligent</p>
             <h1 id="view-title">Tableau</h1>
           </div>
           <div class="topbar-actions">
-            <input id="business-date" type="date" aria-label="Date de travail" />
+            <label class="compact-field">
+              Date
+              <input id="business-date" type="date" aria-label="Date de travail" />
+            </label>
+            <label class="compact-field">
+              Objectif CA
+              <input id="daily-goal" type="number" min="0" step="10" aria-label="Objectif de chiffre d'affaires" />
+            </label>
             <button class="icon-button" type="button" id="export-json" title="Exporter les donnees">EX</button>
             <button class="icon-button danger" type="button" id="reset-demo" title="Reinitialiser la demo">RS</button>
           </div>
         </header>
 
         <section class="view active" id="dashboard-view" data-title="Tableau">
+          <div class="hero-band">
+            <div>
+              <span class="tag">Journee en cours</span>
+              <h2 id="hero-title">Vue patronne</h2>
+              <p id="hero-copy">CA, marge, pertes, commandes et alertes au meme endroit.</p>
+            </div>
+            <div class="hero-score">
+              <span>Progression</span>
+              <strong id="goal-progress">0%</strong>
+            </div>
+          </div>
+
           <div class="metric-grid">
-            <article class="metric">
+            <article class="metric rose">
               <span>CA du jour</span>
               <strong id="metric-ca">0,00</strong>
+              <small id="metric-goal-left">Objectif non defini</small>
             </article>
-            <article class="metric">
-              <span>Marge brute estimee</span>
+            <article class="metric sage">
+              <span>Marge nette estimee</span>
               <strong id="metric-margin">0,00</strong>
+              <small id="metric-margin-rate">0%</small>
             </article>
-            <article class="metric">
-              <span>Tickets</span>
-              <strong id="metric-tickets">0</strong>
+            <article class="metric gold">
+              <span>Panier moyen</span>
+              <strong id="metric-basket">0,00</strong>
+              <small><span id="metric-tickets">0</span> tickets</small>
             </article>
-            <article class="metric">
-              <span>Invendus / pertes</span>
-              <strong id="metric-waste">0,00</strong>
+            <article class="metric plum">
+              <span>Alertes</span>
+              <strong id="metric-alerts">0</strong>
+              <small>stock, commandes, pertes</small>
             </article>
           </div>
 
-          <div class="split-layout">
-            <section class="panel">
+          <div class="dashboard-grid">
+            <section class="panel span-2">
               <div class="panel-header">
-                <h2>Produits du jour</h2>
-                <span id="sales-count">0 lignes</span>
+                <div>
+                  <h2>Performance produits</h2>
+                  <span id="sales-count">0 lignes</span>
+                </div>
+                <button class="ghost-button" type="button" data-view-jump="sales">Caisse</button>
               </div>
               <div class="table-wrap">
                 <table>
@@ -74,6 +108,7 @@
                       <th>Vendu</th>
                       <th>CA</th>
                       <th>Marge</th>
+                      <th>Taux</th>
                     </tr>
                   </thead>
                   <tbody id="dashboard-products"></tbody>
@@ -83,41 +118,86 @@
 
             <section class="panel">
               <div class="panel-header">
-                <h2>Alertes stock</h2>
-                <span id="stock-alert-count">0</span>
+                <div>
+                  <h2>Actions prioritaires</h2>
+                  <span id="action-count">0 action</span>
+                </div>
               </div>
-              <div id="stock-alerts" class="alert-list"></div>
+              <div id="action-list" class="stack-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Encaissements</h2>
+                  <span id="payment-count">0 mode</span>
+                </div>
+              </div>
+              <div id="payment-breakdown" class="stack-list"></div>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Planning boutique</h2>
+                  <span id="timeline-count">0 element</span>
+                </div>
+              </div>
+              <div id="timeline-list" class="timeline-list"></div>
             </section>
           </div>
         </section>
 
-        <section class="view" id="sales-view" data-title="Ventes">
-          <div class="form-panel">
-            <form id="sale-form" class="entry-form">
-              <label>
-                Produit
-                <select id="sale-product" required></select>
-              </label>
-              <label>
-                Quantite vendue
-                <input id="sale-qty" type="number" min="1" step="1" value="1" required />
-              </label>
-              <label>
-                Mode paiement
-                <select id="sale-payment">
-                  <option>Carte</option>
-                  <option>Especes</option>
-                  <option>Livraison</option>
-                  <option>Credit client</option>
-                </select>
-              </label>
-              <button class="primary-button" type="submit">Ajouter</button>
-            </form>
+        <section class="view" id="sales-view" data-title="Caisse">
+          <div class="work-grid">
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Vente rapide</h2>
+                  <span>Produits les plus utilises</span>
+                </div>
+              </div>
+              <div id="quick-sale-grid" class="quick-grid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Nouvelle vente</h2>
+                  <span>Ticket manuel</span>
+                </div>
+              </div>
+              <form id="sale-form" class="stack-form">
+                <label>Produit<select id="sale-product" required></select></label>
+                <label>Quantite<input id="sale-qty" type="number" min="1" step="1" value="1" required /></label>
+                <label>Remise MAD<input id="sale-discount" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Canal
+                  <select id="sale-channel">
+                    <option>Boutique</option>
+                    <option>Livraison</option>
+                    <option>Click & collect</option>
+                    <option>Traiteur</option>
+                  </select>
+                </label>
+                <label>Paiement
+                  <select id="sale-payment">
+                    <option>Carte</option>
+                    <option>Especes</option>
+                    <option>Livraison</option>
+                    <option>Credit client</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">Ajouter la vente</button>
+              </form>
+            </section>
           </div>
 
           <section class="panel">
             <div class="panel-header">
-              <h2>Ventes enregistrees</h2>
+              <div>
+                <h2>Journal de caisse</h2>
+                <span id="sales-journal-count">0 vente</span>
+              </div>
               <button class="ghost-button" type="button" id="export-sales">CSV</button>
             </div>
             <div class="table-wrap">
@@ -127,6 +207,7 @@
                     <th>Heure</th>
                     <th>Produit</th>
                     <th>Qte</th>
+                    <th>Canal</th>
                     <th>Paiement</th>
                     <th>Total</th>
                     <th></th>
@@ -139,118 +220,133 @@
         </section>
 
         <section class="view" id="production-view" data-title="Production">
-          <div class="form-panel">
-            <form id="production-form" class="entry-form">
-              <label>
-                Produit
-                <select id="production-product" required></select>
-              </label>
-              <label>
-                Quantite produite
-                <input id="production-qty" type="number" min="1" step="1" value="10" required />
-              </label>
-              <label>
-                Invendus / pertes
-                <input id="production-waste" type="number" min="0" step="1" value="0" />
-              </label>
-              <button class="primary-button" type="submit">Enregistrer</button>
-            </form>
-          </div>
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Production du jour</h2>
+                  <span>Fournee, pertes, invendus</span>
+                </div>
+              </div>
+              <form id="production-form" class="stack-form">
+                <label>Produit<select id="production-product" required></select></label>
+                <label>Quantite fabriquee<input id="production-qty" type="number" min="1" step="1" value="10" required /></label>
+                <label>Invendus / pertes<input id="production-waste" type="number" min="0" step="1" value="0" /></label>
+                <label>Equipe<input id="production-team" placeholder="Matin, Amina, Youssef..." /></label>
+                <button class="primary-button" type="submit">Enregistrer</button>
+              </form>
+            </section>
 
-          <section class="panel">
-            <div class="panel-header">
-              <h2>Production du jour</h2>
-              <span id="production-summary">0 produits</span>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Produit</th>
-                    <th>Fabrique</th>
-                    <th>Vendu</th>
-                    <th>Invendus</th>
-                    <th>Ecart</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="production-table"></tbody>
-              </table>
-            </div>
-          </section>
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Controle production</h2>
+                  <span id="production-summary">0 produits</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Fabrique</th>
+                      <th>Vendu</th>
+                      <th>Invendus</th>
+                      <th>Reste</th>
+                      <th>Equipe</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="production-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </section>
 
         <section class="view" id="catalog-view" data-title="Recettes">
-          <div class="split-layout wide-left">
-            <section class="panel">
+          <div class="work-grid">
+            <section class="panel span-2">
               <div class="panel-header">
-                <h2>Catalogue produits</h2>
-                <span id="catalog-count">0 produits</span>
+                <div>
+                  <h2>Catalogue & marges</h2>
+                  <span id="catalog-count">0 produits</span>
+                </div>
+                <input class="search-input" id="product-search" placeholder="Rechercher un produit" />
               </div>
               <div id="product-list" class="product-list"></div>
             </section>
 
             <section class="panel">
               <div class="panel-header">
-                <h2>Nouveau produit</h2>
+                <div>
+                  <h2>Produit / recette</h2>
+                  <span>Prix, cout, seuil</span>
+                </div>
               </div>
               <form id="product-form" class="stack-form">
-                <label>
-                  Nom
-                  <input id="product-name" required placeholder="Pain complet" />
-                </label>
-                <label>
-                  Famille
+                <label>Nom<input id="product-name" required placeholder="Pain complet" /></label>
+                <label>Famille
                   <select id="product-family">
                     <option>Pain</option>
                     <option>Viennoiserie</option>
                     <option>Patisserie</option>
                     <option>Snacking</option>
                     <option>Boisson</option>
+                    <option>Traiteur</option>
                   </select>
                 </label>
-                <label>
-                  Prix vente
-                  <input id="product-price" type="number" min="0" step="0.01" required />
-                </label>
-                <label>
-                  Cout matiere
-                  <input id="product-cost" type="number" min="0" step="0.01" required />
-                </label>
-                <label>
-                  Stock alerte
-                  <input id="product-threshold" type="number" min="0" step="1" value="10" />
-                </label>
-                <button class="primary-button" type="submit">Creer</button>
+                <label>Prix vente<input id="product-price" type="number" min="0" step="0.01" required /></label>
+                <label>Cout matiere<input id="product-cost" type="number" min="0" step="0.01" required /></label>
+                <label>Temps minutes<input id="product-minutes" type="number" min="0" step="1" value="0" /></label>
+                <label>Seuil alerte<input id="product-threshold" type="number" min="0" step="1" value="10" /></label>
+                <button class="primary-button" type="submit">Creer le produit</button>
               </form>
             </section>
           </div>
         </section>
 
         <section class="view" id="stock-view" data-title="Stock">
-          <div class="form-panel">
-            <form id="purchase-form" class="entry-form">
-              <label>
-                Ingredient
-                <select id="purchase-ingredient" required></select>
-              </label>
-              <label>
-                Quantite
-                <input id="purchase-qty" type="number" min="0.01" step="0.01" value="1" required />
-              </label>
-              <label>
-                Cout total
-                <input id="purchase-cost" type="number" min="0" step="0.01" value="0" />
-              </label>
-              <button class="primary-button" type="submit">Achat</button>
-            </form>
-          </div>
-
-          <div class="split-layout">
+          <div class="work-grid">
             <section class="panel">
               <div class="panel-header">
-                <h2>Ingredients</h2>
-                <span id="ingredient-count">0</span>
+                <div>
+                  <h2>Achat fournisseur</h2>
+                  <span>Entree stock</span>
+                </div>
+              </div>
+              <form id="purchase-form" class="stack-form">
+                <label>Ingredient<select id="purchase-ingredient" required></select></label>
+                <label>Quantite<input id="purchase-qty" type="number" min="0.01" step="0.01" value="1" required /></label>
+                <label>Cout total<input id="purchase-cost" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Fournisseur<input id="purchase-supplier" placeholder="Moulin, grossiste..." /></label>
+                <button class="primary-button" type="submit">Ajouter l'achat</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Nouvel ingredient</h2>
+                  <span>Matiere premiere</span>
+                </div>
+              </div>
+              <form id="ingredient-form" class="stack-form">
+                <label>Nom<input id="ingredient-name" required placeholder="Amande poudre" /></label>
+                <label>Unite<input id="ingredient-unit" required placeholder="kg, litre, piece" /></label>
+                <label>Stock initial<input id="ingredient-stock" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Seuil alerte<input id="ingredient-threshold" type="number" min="0" step="0.01" value="5" /></label>
+                <button class="primary-button" type="submit">Creer l'ingredient</button>
+              </form>
+            </section>
+
+            <section class="panel span-3">
+              <div class="panel-header">
+                <div>
+                  <h2>Inventaire</h2>
+                  <span id="ingredient-count">0 ingredients</span>
+                </div>
+                <button class="ghost-button" type="button" id="export-purchases">Achats CSV</button>
               </div>
               <div class="table-wrap">
                 <table>
@@ -259,30 +355,102 @@
                       <th>Ingredient</th>
                       <th>Unite</th>
                       <th>Stock</th>
-                      <th>Alerte</th>
+                      <th>Seuil</th>
+                      <th>Statut</th>
                     </tr>
                   </thead>
                   <tbody id="ingredient-table"></tbody>
                 </table>
               </div>
             </section>
+          </div>
+        </section>
 
+        <section class="view" id="orders-view" data-title="Commandes">
+          <div class="work-grid">
             <section class="panel">
               <div class="panel-header">
-                <h2>Achats recents</h2>
-                <button class="ghost-button" type="button" id="export-purchases">CSV</button>
+                <div>
+                  <h2>Commande cliente</h2>
+                  <span>Reservation, acompte, statut</span>
+                </div>
+              </div>
+              <form id="order-form" class="stack-form">
+                <label>Cliente / client<input id="order-customer" required placeholder="Nom client" /></label>
+                <label>Telephone<input id="order-phone" placeholder="+212..." /></label>
+                <label>Produit<input id="order-product" required placeholder="Gateau, pains, buffet..." /></label>
+                <label>Date retrait<input id="order-date" type="date" required /></label>
+                <label>Total MAD<input id="order-total" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Acompte MAD<input id="order-deposit" type="number" min="0" step="0.01" value="0" /></label>
+                <label>Statut
+                  <select id="order-status">
+                    <option>A preparer</option>
+                    <option>En production</option>
+                    <option>Prete</option>
+                    <option>Livree</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">Ajouter la commande</button>
+              </form>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Commandes a suivre</h2>
+                  <span id="orders-count">0 commande</span>
+                </div>
+              </div>
+              <div id="orders-list" class="order-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="expenses-view" data-title="Charges">
+          <div class="work-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Nouvelle charge</h2>
+                  <span>Energie, loyer, salaire...</span>
+                </div>
+              </div>
+              <form id="expense-form" class="stack-form">
+                <label>Categorie
+                  <select id="expense-category">
+                    <option>Energie</option>
+                    <option>Loyer</option>
+                    <option>Salaires</option>
+                    <option>Transport</option>
+                    <option>Maintenance</option>
+                    <option>Marketing</option>
+                    <option>Autre</option>
+                  </select>
+                </label>
+                <label>Montant MAD<input id="expense-amount" type="number" min="0" step="0.01" required /></label>
+                <label>Note<input id="expense-note" placeholder="Facture, observation..." /></label>
+                <button class="primary-button" type="submit">Ajouter la charge</button>
+              </form>
+            </section>
+
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <h2>Charges du jour</h2>
+                  <span id="expense-total">0,00 MAD</span>
+                </div>
               </div>
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Ingredient</th>
-                      <th>Qte</th>
-                      <th>Cout</th>
+                      <th>Categorie</th>
+                      <th>Note</th>
+                      <th>Montant</th>
+                      <th></th>
                     </tr>
                   </thead>
-                  <tbody id="purchase-table"></tbody>
+                  <tbody id="expense-table"></tbody>
                 </table>
               </div>
             </section>
@@ -291,18 +459,46 @@
 
         <section class="view" id="reports-view" data-title="Rapports">
           <div class="report-grid">
-            <section class="panel">
+            <section class="panel span-2">
               <div class="panel-header">
-                <h2>Cloture de journee</h2>
+                <div>
+                  <h2>Cloture de journee</h2>
+                  <span>Copiable pour comptable</span>
+                </div>
                 <button class="ghost-button" type="button" id="copy-close">Copier</button>
               </div>
               <pre id="daily-close"></pre>
             </section>
             <section class="panel">
               <div class="panel-header">
-                <h2>Marge par famille</h2>
+                <div>
+                  <h2>Marge par famille</h2>
+                  <span>Rentabilite</span>
+                </div>
               </div>
-              <div id="family-margins" class="family-list"></div>
+              <div id="family-margins" class="stack-list"></div>
+            </section>
+            <section class="panel span-3">
+              <div class="panel-header">
+                <div>
+                  <h2>Historique achats</h2>
+                  <span>Derniers mouvements</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Ingredient</th>
+                      <th>Qte</th>
+                      <th>Fournisseur</th>
+                      <th>Cout</th>
+                    </tr>
+                  </thead>
+                  <tbody id="purchase-table"></tbody>
+                </table>
+              </div>
             </section>
           </div>
         </section>
