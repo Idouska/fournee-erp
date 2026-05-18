@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fournee ERP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navigation principale">
+        <div class="brand">
+          <div class="brand-mark">FE</div>
+          <div>
+            <strong>Fournee ERP</strong>
+            <span>Boulangerie</span>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Modules">
+          <button class="nav-tab active" type="button" data-view="dashboard">Tableau</button>
+          <button class="nav-tab" type="button" data-view="sales">Ventes</button>
+          <button class="nav-tab" type="button" data-view="production">Production</button>
+          <button class="nav-tab" type="button" data-view="catalog">Recettes</button>
+          <button class="nav-tab" type="button" data-view="stock">Stock</button>
+          <button class="nav-tab" type="button" data-view="reports">Rapports</button>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Pilotage quotidien</p>
+            <h1 id="view-title">Tableau</h1>
+          </div>
+          <div class="topbar-actions">
+            <input id="business-date" type="date" aria-label="Date de travail" />
+            <button class="icon-button" type="button" id="export-json" title="Exporter les donnees">EX</button>
+            <button class="icon-button danger" type="button" id="reset-demo" title="Reinitialiser la demo">RS</button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboard-view" data-title="Tableau">
+          <div class="metric-grid">
+            <article class="metric">
+              <span>CA du jour</span>
+              <strong id="metric-ca">0,00</strong>
+            </article>
+            <article class="metric">
+              <span>Marge brute estimee</span>
+              <strong id="metric-margin">0,00</strong>
+            </article>
+            <article class="metric">
+              <span>Tickets</span>
+              <strong id="metric-tickets">0</strong>
+            </article>
+            <article class="metric">
+              <span>Invendus / pertes</span>
+              <strong id="metric-waste">0,00</strong>
+            </article>
+          </div>
+
+          <div class="split-layout">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Produits du jour</h2>
+                <span id="sales-count">0 lignes</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Vendu</th>
+                      <th>CA</th>
+                      <th>Marge</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-products"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Alertes stock</h2>
+                <span id="stock-alert-count">0</span>
+              </div>
+              <div id="stock-alerts" class="alert-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="sales-view" data-title="Ventes">
+          <div class="form-panel">
+            <form id="sale-form" class="entry-form">
+              <label>
+                Produit
+                <select id="sale-product" required></select>
+              </label>
+              <label>
+                Quantite vendue
+                <input id="sale-qty" type="number" min="1" step="1" value="1" required />
+              </label>
+              <label>
+                Mode paiement
+                <select id="sale-payment">
+                  <option>Carte</option>
+                  <option>Especes</option>
+                  <option>Livraison</option>
+                  <option>Credit client</option>
+                </select>
+              </label>
+              <button class="primary-button" type="submit">Ajouter</button>
+            </form>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Ventes enregistrees</h2>
+              <button class="ghost-button" type="button" id="export-sales">CSV</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Heure</th>
+                    <th>Produit</th>
+                    <th>Qte</th>
+                    <th>Paiement</th>
+                    <th>Total</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="sales-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="production-view" data-title="Production">
+          <div class="form-panel">
+            <form id="production-form" class="entry-form">
+              <label>
+                Produit
+                <select id="production-product" required></select>
+              </label>
+              <label>
+                Quantite produite
+                <input id="production-qty" type="number" min="1" step="1" value="10" required />
+              </label>
+              <label>
+                Invendus / pertes
+                <input id="production-waste" type="number" min="0" step="1" value="0" />
+              </label>
+              <button class="primary-button" type="submit">Enregistrer</button>
+            </form>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Production du jour</h2>
+              <span id="production-summary">0 produits</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Fabrique</th>
+                    <th>Vendu</th>
+                    <th>Invendus</th>
+                    <th>Ecart</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="production-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="catalog-view" data-title="Recettes">
+          <div class="split-layout wide-left">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Catalogue produits</h2>
+                <span id="catalog-count">0 produits</span>
+              </div>
+              <div id="product-list" class="product-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Nouveau produit</h2>
+              </div>
+              <form id="product-form" class="stack-form">
+                <label>
+                  Nom
+                  <input id="product-name" required placeholder="Pain complet" />
+                </label>
+                <label>
+                  Famille
+                  <select id="product-family">
+                    <option>Pain</option>
+                    <option>Viennoiserie</option>
+                    <option>Patisserie</option>
+                    <option>Snacking</option>
+                    <option>Boisson</option>
+                  </select>
+                </label>
+                <label>
+                  Prix vente
+                  <input id="product-price" type="number" min="0" step="0.01" required />
+                </label>
+                <label>
+                  Cout matiere
+                  <input id="product-cost" type="number" min="0" step="0.01" required />
+                </label>
+                <label>
+                  Stock alerte
+                  <input id="product-threshold" type="number" min="0" step="1" value="10" />
+                </label>
+                <button class="primary-button" type="submit">Creer</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="stock-view" data-title="Stock">
+          <div class="form-panel">
+            <form id="purchase-form" class="entry-form">
+              <label>
+                Ingredient
+                <select id="purchase-ingredient" required></select>
+              </label>
+              <label>
+                Quantite
+                <input id="purchase-qty" type="number" min="0.01" step="0.01" value="1" required />
+              </label>
+              <label>
+                Cout total
+                <input id="purchase-cost" type="number" min="0" step="0.01" value="0" />
+              </label>
+              <button class="primary-button" type="submit">Achat</button>
+            </form>
+          </div>
+
+          <div class="split-layout">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Ingredients</h2>
+                <span id="ingredient-count">0</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Ingredient</th>
+                      <th>Unite</th>
+                      <th>Stock</th>
+                      <th>Alerte</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ingredient-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Achats recents</h2>
+                <button class="ghost-button" type="button" id="export-purchases">CSV</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Ingredient</th>
+                      <th>Qte</th>
+                      <th>Cout</th>
+                    </tr>
+                  </thead>
+                  <tbody id="purchase-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="reports-view" data-title="Rapports">
+          <div class="report-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Cloture de journee</h2>
+                <button class="ghost-button" type="button" id="copy-close">Copier</button>
+              </div>
+              <pre id="daily-close"></pre>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Marge par famille</h2>
+              </div>
+              <div id="family-margins" class="family-list"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
