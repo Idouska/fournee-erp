@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fournee ERP V4</title>
+    <title>Fournee ERP V5</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -45,6 +45,7 @@
             <h1 id="view-title">Tableau</h1>
           </div>
           <div class="topbar-actions">
+            <span class="cloud-badge" id="cloud-status">Local</span>
             <label class="compact-field">
               Date
               <input id="business-date" type="date" aria-label="Date de travail" />
@@ -661,6 +662,41 @@
                 <button class="primary-button" type="submit">Mettre a jour les listes</button>
               </form>
             </section>
+
+            <section class="panel span-3">
+              <div class="panel-header">
+                <div>
+                  <h2>Cloud Supabase</h2>
+                  <span id="cloud-summary">Mode local actif</span>
+                </div>
+              </div>
+              <div class="cloud-grid">
+                <form id="supabase-config-form" class="stack-form">
+                  <label>URL Supabase<input id="supabase-url" placeholder="https://xxxx.supabase.co" /></label>
+                  <label>Anon key<input id="supabase-anon-key" type="password" placeholder="eyJ..." /></label>
+                  <button class="primary-button" type="submit">Enregistrer la connexion cloud</button>
+                </form>
+                <form id="auth-form" class="stack-form">
+                  <label>Email<input id="auth-email" type="email" autocomplete="email" /></label>
+                  <label>Mot de passe<input id="auth-password" type="password" autocomplete="current-password" /></label>
+                  <div class="button-row">
+                    <button class="primary-button" type="button" id="auth-sign-in">Connexion</button>
+                    <button class="ghost-button" type="button" id="auth-sign-up">Creer compte</button>
+                    <button class="ghost-button" type="button" id="auth-sign-out">Sortir</button>
+                  </div>
+                </form>
+                <div class="stack-form">
+                  <div class="list-card calm">
+                    <strong>Synchronisation</strong>
+                    <span id="sync-status">Ajoute Supabase puis connecte-toi.</span>
+                  </div>
+                  <div class="button-row">
+                    <button class="primary-button" type="button" id="sync-upload">Envoyer vers cloud</button>
+                    <button class="ghost-button" type="button" id="sync-download">Recuperer cloud</button>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </section>
 
@@ -715,6 +751,7 @@
     </div>
 
     <div id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

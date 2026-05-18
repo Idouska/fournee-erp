@@ -1,5 +1,7 @@
-const STORAGE_KEY = "fournee-erp-v2";
+const STORAGE_KEY = "fournee-erp-v5";
 const LEGACY_KEY = "fournee-erp-v1";
+const LEGACY_KEYS = ["fournee-erp-v2", "fournee-erp-v1"];
+const SUPABASE_CONFIG_KEY = "fournee-supabase-config";
 
 const seedData = {
   settings: {
@@ -46,6 +48,8 @@ let state = loadState();
 let currentDate = localDate();
 let productSearch = "";
 let pendingProductPhoto = "";
+let supabaseClient = null;
+let currentUser = null;
 
 const money = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "MAD" });
 const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
@@ -107,7 +111,7 @@ function normalizeState(input) {
 }
 
 function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY) || LEGACY_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
   if (!raw) return clone(seedData);
 
   try {
@@ -119,6 +123,18 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadSupabaseConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(SUPABASE_CONFIG_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveSupabaseConfig(config) {
+  localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(config));
 }
 
 function escapeHtml(value) {
@@ -208,6 +224,103 @@ function toast(message) {
   toastEl.textContent = message;
   toastEl.classList.add("show");
   window.setTimeout(() => toastEl.classList.remove("show"), 2200);
+}
+
+function setCloudStatus(label, online = false) {
+  el("cloud-status").textContent = label;
+  el("cloud-status").classList.toggle("online", online);
+  el("cloud-summary").textContent = online ? `Connecte: ${currentUser?.email || ""}` : label;
+  el("sync-status").textContent = online
+    ? "Cloud pret. Envoie ou recupere les donnees."
+    : "Ajoute Supabase puis connecte-toi.";
+}
+
+async function initSupabase() {
+  const config = loadSupabaseConfig();
+  el("supabase-url").value = config.url || "";
+  el("supabase-anon-key").value = config.anonKey || "";
+
+  if (!config.url || !config.anonKey || !window.supabase) {
+    setCloudStatus("Local", false);
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+  const { data } = await supabaseClient.auth.getUser();
+  currentUser = data?.user || null;
+  setCloudStatus(currentUser ? "Cloud" : "Cloud pret", Boolean(currentUser));
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    setCloudStatus(currentUser ? "Cloud" : "Cloud pret", Boolean(currentUser));
+  });
+}
+
+function requireCloud() {
+  if (!supabaseClient) {
+    toast("Configure Supabase dans Reglages");
+    return false;
+  }
+  if (!currentUser) {
+    toast("Connecte-toi au cloud");
+    return false;
+  }
+  return true;
+}
+
+async function signInCloud() {
+  if (!supabaseClient) return toast("Configure Supabase d'abord");
+  const email = el("auth-email").value.trim();
+  const password = el("auth-password").value;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) return toast(error.message);
+  currentUser = data.user;
+  setCloudStatus("Cloud", true);
+  toast("Connecte");
+}
+
+async function signUpCloud() {
+  if (!supabaseClient) return toast("Configure Supabase d'abord");
+  const email = el("auth-email").value.trim();
+  const password = el("auth-password").value;
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) return toast(error.message);
+  currentUser = data.user || currentUser;
+  setCloudStatus(currentUser ? "Cloud" : "Email a confirmer", Boolean(currentUser));
+  toast(currentUser ? "Compte cree" : "Confirme l'email");
+}
+
+async function signOutCloud() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  setCloudStatus("Cloud pret", false);
+  toast("Deconnecte");
+}
+
+async function uploadCloud() {
+  if (!requireCloud()) return;
+  const payload = normalizeState(state);
+  const { error } = await supabaseClient
+    .from("erp_state")
+    .upsert({ user_id: currentUser.id, payload, updated_at: new Date().toISOString() });
+  if (error) return toast(error.message);
+  toast("Donnees envoyees au cloud");
+}
+
+async function downloadCloud() {
+  if (!requireCloud()) return;
+  const { data, error } = await supabaseClient
+    .from("erp_state")
+    .select("payload")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+  if (error) return toast(error.message);
+  if (!data?.payload) return toast("Aucune donnee cloud");
+  state = normalizeState(data.payload);
+  saveState();
+  renderAll();
+  toast("Donnees cloud recuperees");
 }
 
 function productById(id) {
@@ -798,6 +911,9 @@ function renderSettings() {
   el("setting-channels").value = (state.settings.channels || []).join("\n");
   el("setting-payments").value = (state.settings.payments || []).join("\n");
   el("setting-order-statuses").value = (state.settings.orderStatuses || []).join("\n");
+  const config = loadSupabaseConfig();
+  el("supabase-url").value = config.url || "";
+  el("supabase-anon-key").value = config.anonKey || "";
 }
 
 function renderReports() {
@@ -1277,6 +1393,20 @@ function bindEvents() {
   el("document-form").addEventListener("submit", addDocument);
   el("settings-form").addEventListener("submit", saveSettings);
   el("lists-form").addEventListener("submit", saveLists);
+  el("supabase-config-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    saveSupabaseConfig({
+      url: el("supabase-url").value.trim(),
+      anonKey: el("supabase-anon-key").value.trim()
+    });
+    await initSupabase();
+    toast("Configuration cloud enregistree");
+  });
+  el("auth-sign-in").addEventListener("click", signInCloud);
+  el("auth-sign-up").addEventListener("click", signUpCloud);
+  el("auth-sign-out").addEventListener("click", signOutCloud);
+  el("sync-upload").addEventListener("click", uploadCloud);
+  el("sync-download").addEventListener("click", downloadCloud);
 
   el("product-photo").addEventListener("change", (event) => {
     const file = event.target.files?.[0];
@@ -1365,3 +1495,4 @@ function bindEvents() {
 
 bindEvents();
 renderAll();
+initSupabase();

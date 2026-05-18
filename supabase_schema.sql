@@ -122,6 +122,12 @@ create table settings (
   updated_at timestamptz not null default now()
 );
 
+create table erp_state (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 alter table products enable row level security;
 alter table ingredients enable row level security;
 alter table sellers enable row level security;
@@ -133,3 +139,21 @@ alter table orders enable row level security;
 alter table expenses enable row level security;
 alter table documents enable row level security;
 alter table settings enable row level security;
+alter table erp_state enable row level security;
+
+create policy "Users can read their ERP state"
+on erp_state for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert their ERP state"
+on erp_state for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can update their ERP state"
+on erp_state for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can delete their ERP state"
+on erp_state for delete
+using (auth.uid() = user_id);

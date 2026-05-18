@@ -199,6 +199,24 @@ h2 {
   gap: 10px;
 }
 
+.cloud-badge {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--plum);
+  padding: 0 14px;
+  font-weight: 900;
+  box-shadow: var(--shadow-soft);
+}
+
+.cloud-badge.online {
+  background: #e9f6ef;
+  color: var(--good);
+}
+
 .compact-field {
   width: 156px;
 }
@@ -419,7 +437,8 @@ textarea {
 
 .dashboard-grid,
 .work-grid,
-.report-grid {
+.report-grid,
+.cloud-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
@@ -720,6 +739,12 @@ th:last-child {
   gap: 8px;
 }
 
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .status.good {
   background: #e9f6ef;
   color: var(--good);
@@ -913,6 +938,7 @@ pre {
   .dashboard-grid,
   .work-grid,
   .report-grid,
+  .cloud-grid,
   .inline-form,
   .quick-grid {
     grid-template-columns: 1fr;
