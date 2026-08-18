@@ -1,0 +1,14 @@
+{
+  "name": "shopify-store-clone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Duplication idempotente d'une boutique Shopify vers une autre via l'Admin GraphQL API",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "bin": { "shopify-clone": "src/index.js" },
+  "scripts": {
+    "audit": "node src/index.js --steps=audit",
+    "clone": "node src/index.js",
+    "verify": "node src/index.js --steps=verify"
+  }
+}
