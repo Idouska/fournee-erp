@@ -97,6 +97,11 @@ export class ShopifyClient {
           body: JSON.stringify({ query, variables })
         });
       } catch (err) {
+        // Domaine inexistant ou port fermé : inutile de réessayer.
+        const code = err?.cause?.code || err?.code;
+        if (code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'EAI_AGAIN') {
+          throw new Error(`Boutique ${this.label} injoignable (${this.shop}) : ${code}`);
+        }
         lastError = err;
         this.stats.retries += 1;
         await sleep(2 ** attempt * 500);

@@ -196,7 +196,7 @@ export async function run(ctx) {
   let unresolvedTotal = 0;
   let doneMo = 0;
   for (const mo of metaobjects) {
-    const { fields, unresolved } = remapFields(ctx, mo.fields || [], { kind: 'metaobject', type: mo.type, handle: mo.handle });
+    const { fields, unresolved } = remapFields(ctx, mo.fields || [], { kind: 'metaobject', type: mo.type, handle: mo.handle, srcId: mo.id });
     unresolvedTotal += unresolved;
     const existingMo = destByType.get(mo.type)?.get(mo.handle);
     try {

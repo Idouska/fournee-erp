@@ -62,7 +62,7 @@ export async function run(ctx) {
       isPublished: page.isPublished,
       publishDate: page.publishedAt || undefined,
       templateSuffix: page.templateSuffix || undefined,
-      metafields: metafieldInputs(ctx, page.metafields?.nodes, { kind: 'page', handle: page.handle })
+      metafields: metafieldInputs(ctx, page.metafields?.nodes, { kind: 'page', handle: page.handle, srcId: page.id })
     });
     try {
       if (existing) {
@@ -98,7 +98,7 @@ export async function run(ctx) {
       handle: blog.handle,
       templateSuffix: blog.templateSuffix || undefined,
       commentPolicy: blog.commentPolicy || undefined,
-      metafields: metafieldInputs(ctx, blog.metafields?.nodes, { kind: 'blog', handle: blog.handle })
+      metafields: metafieldInputs(ctx, blog.metafields?.nodes, { kind: 'blog', handle: blog.handle, srcId: blog.id })
     });
     try {
       if (existing) {
@@ -153,7 +153,7 @@ export async function run(ctx) {
       isPublished: article.isPublished,
       publishDate: article.publishedAt || undefined,
       templateSuffix: article.templateSuffix || undefined,
-      metafields: metafieldInputs(ctx, article.metafields?.nodes, { kind: 'article', handle: article.handle })
+      metafields: metafieldInputs(ctx, article.metafields?.nodes, { kind: 'article', handle: article.handle, srcId: article.id })
     });
     try {
       if (existing) {

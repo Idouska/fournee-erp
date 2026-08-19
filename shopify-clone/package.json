@@ -9,6 +9,7 @@
   "scripts": {
     "audit": "node src/index.js --steps=audit",
     "clone": "node src/index.js",
-    "verify": "node src/index.js --steps=verify"
+    "verify": "node src/index.js --steps=verify",
+    "test": "node --test test/unit.test.mjs"
   }
 }

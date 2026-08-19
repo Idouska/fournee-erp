@@ -103,7 +103,7 @@ export async function run(ctx) {
           }
         : undefined,
       products: !automatic && !existing ? desired : undefined,
-      metafields: metafieldInputs(ctx, collection.metafields?.nodes, { kind: 'collection', handle: collection.handle })
+      metafields: metafieldInputs(ctx, collection.metafields?.nodes, { kind: 'collection', handle: collection.handle, srcId: collection.id })
     });
 
     try {

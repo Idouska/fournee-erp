@@ -222,7 +222,7 @@ export async function run(ctx) {
             ? { weight: { unit: variant.inventoryItem.measurement.weight.unit, value: variant.inventoryItem.measurement.weight.value } }
             : undefined
         }),
-        metafields: metafieldInputs(ctx, variant.metafields?.nodes, { kind: 'variant', handle: product.handle, variant: key })
+        metafields: metafieldInputs(ctx, variant.metafields?.nodes, { kind: 'variant', handle: product.handle, variant: key, srcId: variant.id })
       });
     });
 
@@ -254,7 +254,7 @@ export async function run(ctx) {
       ),
       files,
       variants,
-      metafields: metafieldInputs(ctx, product.metafields?.nodes, { kind: 'product', handle: product.handle })
+      metafields: metafieldInputs(ctx, product.metafields?.nodes, { kind: 'product', handle: product.handle, srcId: product.id })
     });
 
     try {
